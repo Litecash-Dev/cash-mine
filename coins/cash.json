@@ -1,0 +1,8 @@
+{
+    "name": "Litecash",
+    "symbol": "CASH",
+    "algorithm": "BeamHash",
+    "txfee": 0.00005,
+    "peerMagic":"",
+    "peerMagicTestnet":""
+}

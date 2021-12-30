@@ -229,8 +229,10 @@ module.exports = function(logger) {
             logSubCat,
             'We thought a block was found but it was rejected by the daemon, share data: ' + shareData,
           );
-        else if (isValidBlock)
+        else if (isValidBlock){
           logger.debug(logSystem, logComponent, logSubCat, 'Block found: ' + data.blockHash + ' by ' + data.worker);
+          console.log(data.blockHash);
+        }
 
         if (isValidShare) {
           if (data.shareDiff > 1000000000) {

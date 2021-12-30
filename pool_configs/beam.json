@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "coin": "beam.json",
+  "coin": "cash.json",
   "paymentProcessing": {
     "enabled": false,
     "minConf": 5,
@@ -18,8 +18,8 @@
   },
   "tlsOptions": {
     "enabled": true,
-    "serverKey": "../strike/stratum.key",
-    "serverCert": "../strike/stratum.crt",
+    "serverKey": "",
+    "serverCert": "",
     "ca": ""
  },
 "ports": {
@@ -45,10 +45,10 @@
   "_comment_poolId": "use it for region identification: eu, us, asia or keep default if you have one stratum instance for one coin",
   "daemons": [
     {
-      "host": "127.0.0.1",
-      "port": 9999,
-      "user": "rpcuser",
-      "password": "pass@jkjvieh9"
+      "host": "",
+      "port": 3333,
+      "user": "",
+      "password": ""
     }
   ],
   "p2p": {
@@ -59,11 +59,11 @@
   },
   "mposMode": {
     "enabled": true,
-    "host": "127.0.0.1",
+    "host": "localhost",
     "port": 3306,
-    "user": "sqluser",
-    "password": "sqlpassword",
-    "database": "beam",
+    "user": "",
+    "password": "",
+    "database": "",
     "checkPassword": false,
     "autoCreateWorker": true
   }

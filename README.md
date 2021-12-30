@@ -1,5 +1,3 @@
-Dec 6 2021 - Initial Fork, Updates to come!
-
 BEAM OPEN SOURCE POOL GUIDE
 
 (With credit to Greg of Icemining Pools for his excellent efforts in building the stratum and pool, Lolliedieb for the Beamhashverify to enable this pool to switch between BeamHashI, BeamHashII and BeamHashIII and also to VSnation for the magically unique BASiC payment processor)

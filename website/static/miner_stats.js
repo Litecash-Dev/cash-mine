@@ -53,7 +53,6 @@ function buildChartData(){
 			workerHistoryMax = a.hashrate.length;
 		}
 	}
-	
 	var i=0;
     workerHashrateData = [];
     for (var worker in workers){
@@ -141,6 +140,8 @@ function displayCharts() {
 }
 
 function updateStats() {
+        if(statData.paid > 0){
+        console.log(statData);
 	totalHash = statData.totalHash;
 	totalPaid = statData.paid;
 	totalBal = statData.balance;
@@ -156,7 +157,7 @@ function updateStats() {
 	$("#statsTotalImmature").text(totalImmature);
 	$("#statsTotalBal").text(totalBal);
 	$("#statsTotalPaid").text(totalPaid);
-	$("#statsTotalShares").text(totalShares.toFixed(2));
+	$("#statsTotalShares").text(totalShares.toFixed(2));}
 }
 function updateWorkerStats() {
 	// update worker stats
@@ -205,8 +206,8 @@ $.getJSON('/api/worker_stats?'+_miner, function(data){
 	for (var w in statData.workers) { _workerCount++; }
 	buildChartData();
 	displayCharts();
-	rebuildWorkerDisplay();	
-    updateStats();
+	rebuildWorkerDisplay();
+        updateStats();
 });
 
 // live stat updates

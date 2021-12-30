@@ -64,7 +64,7 @@
     }
 
     a.miningOption:hover{
-        color: #f69b3a;
+        color:  #f69b3a;
     }
 
     .miningOption:first-child{
@@ -128,7 +128,7 @@
         left: 50%;
         margin-left: -375px;
         position: absolute;
-        background-color: #f06350;
+        background-color: #0b3f67; /* original  #f06350; */
     }
     #coinInfo .coinInfoName{
         text-transform: capitalize;
@@ -235,19 +235,20 @@
     </div>
 
     <div id="main">
-            <div><h1> <a href="https://beam.mw/mining" target="_blank">MINE BEAM</a></h1></div>
+            <div><h1> <a href="https://lite-cash.com/mining.html" target="_blank">Mine Litecash</a></h1></div>
             <div class="miningOptionInstructions">
 <div>           
             </div>
-The above link takes you to www.beam.mw/mining which has a mining calculator and various other resources to assist with your Beam mining. For a quickstart guide, please click the link on the left to see pool connection information.</p>
-For a complete easy-to-understand guide on mining at this pool, please see <a href="https://www.raskul.com/mining-beam-on-the-pool/">https://www.raskul.com/mining-beam-on-the-pool/</a></p>
-I recommend <a href="https://app.mmpos.eu/register?refer=W6G-WV7F-H8E" target="_blank">MMPOS miner operating system</a> and using <a href="https://miniz.ch" target="_blank">MiniZ miner software for NVIDIA GPU</a> or <a href="https://github.com/Lolliedieb/lolMiner-releases/releases" target="_blank">lolMiner for AMD GPU.</a></p>
+The above link takes you to official LiteCash website mining page for more information.</p> 
+
+<p>For a quickstart guide, please click the link on the left to see pool connection information.</p>
 
 </p>
 <u><b>PAYMENTS</b></u>
 </p>
-Miner payments are sent automatically upon each confirmed block and all mined rewards should land in your wallet, whenever you open up your Beam wallet app. There is no need to request payouts.
-Payout times are on the hour, every hour and will push for 10 mins. Simply open your wallet between :00 and :10 of any hour, and your mined rewards will be sent to you!
+Payments for new blocks will occur after 10 confirmations. Litecash will allow transactions to stand for 12 hours, then they revert to the sender. The payment system will send again upon failure, but it is advisable to open your wallet once every 12 hours or so. Due to the lengthy confirmation times of custodial exchange wallets, it is not recommended that custodial exchange addresses be used. When you are mining to a running wallet and the pool&apos;s hash rate is high, some payments may occur rapidly. It is recommended to add the Litecash node at gibs.cash&colon;10127 to your wallet&apos;s peer list or set it as the remote node to improve payment response and avoid transaction delays.
+<!-- Miner payments are sent automatically upon each confirmed block and all mined rewards should land in your wallet. You will need to leave your wallet open at all times to receive the automated payments. There is no need to request payouts. -->
+<!-- Payout times are on the hour, every hour and will push for 10 mins. Simply open your wallet between :00 and :10 of any hour, and your mined rewards will be sent to you!-->
 </p>
 Below you will find quick and easy command lines which you can copy and paste into your required miner/operating system.
 
@@ -255,8 +256,8 @@ Below you will find quick and easy command lines which you can copy and paste in
 </p>
 
 <center>
-		<h1>Command Line for EU 🇪🇺  miners</h1>
-
+		<h1>Command Line for miners</h1>
+<h3>We recommend using the domain name gibs.cash to connect. If, however, you have issues you can try using the IP (143.198.45.233)</h3>
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;}
 .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
@@ -275,30 +276,26 @@ Below you will find quick and easy command lines which you can copy and paste in
 </thead>
 <tbody>
   <tr>
-    <td class="tg-0lax"><a href="https://miniz.ch/download/" target="_blank" rel="noopener noreferrer">MiniZ</a></td>
-    <td class="tg-0lax">miniZ.exe --url=ssl://WALLET.WORKER@eu-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
-    <td class="tg-0lax">./miniZ --url ssl://WALLET.WORKER@eu-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
+    <td class="tg-0lax"><a href="https://miniz.ch/download/" target="_blank" rel="noopener noreferrer">MiniZ</a>(version 1.7x3_win-x64 is known to work using Equihash 150,5 and Persona Beam-Pow)</td>
+    <td class="tg-0lax">miniZ.exe --url=ssl://WALLET.WORKER@gibs.cash:1690 --par=150,5 --pers=Beam-PoW</td>
+    <td class="tg-0lax">./miniZ --url ssl://WALLET.WORKER@gibs.cash:1690 --par=150,5 --pers=Beam-PoW</td>
   </tr>
   <tr>
-    <td class="tg-0lax"><a href="https://github.com/Lolliedieb/lolMiner-releases/releases" target="_blank" rel="noopener noreferrer">LolMiner</a></td>
-    <td class="tg-0lax">lolMiner.exe --coin BEAM --tls on --pool eu-pool.raskul.com:1690 --user WALLET.WORKER</td>
-    <td class="tg-0lax">./lolMiner --coin BEAM --tls on --pool eu-pool.raskul.com:1690 --user WALLET.WORKER</td>
+    <td class="tg-0lax"><a href="https://github.com/develsoftware/GMinerRelease/releases/tag/2.33" target="_blank" rel="noopener noreferrer">Gminer 2.33</a></td>
+    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">miner.exe --algo beamhashI --server gibs.cash:1690 --ssl 1 --user WALLET.WORKER</span></td>
+    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./miner --algo beamhashI --server gibs.cash:1690 --ssl 1 --user WALLET.WORKER</span></td>
   </tr>
   <tr>
-    <td class="tg-0lax"><a href="https://github.com/develsoftware/GMinerRelease/releases" target="_blank" rel="noopener noreferrer">Gminer</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">miner.exe --algo beamhash --server eu-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./miner --algo beamhash --server eu-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
+    <td class="tg-0lax"><a href="https://github.com/Lolliedieb/lolMiner-releases/" target="_blank" rel="noopener noreferrer">lolMiner 1.36a</a></td>
+    <td class="tg-0lax">lolminer -p gibs.cash:1690 -u WALLET.WORKER -a BEAM-I --pers Beam-PoW</td>
+    <td class="tg-0lax">./lolminer -p gibs.cash:1690 -u WALLET.WORKER -a BEAM-I --pers Beam-PoW</td>
   </tr>
+<!---
   <tr>
-    <td class="tg-0lax"><a href="https://www.bminer.me/releases/" target="_blank" rel="noopener noreferrer">Bminer</a></td>
-    <td class="tg-0lax">bminer.exe -uri ssl://WALLET.WORKER@eu-pool.raskul.com:1690</td>
-    <td class="tg-0lax">./bminer -uri ssl://WALLET.WORKER@eu-pool.raskul.com:1690</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://builds.beam.mw/BeamHashIII/2020.05.04/Release/win/opencl-miner-1.0.81.zip" target="_blank" rel="noopener noreferrer">OpenCL</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">beamMiner.exe --server eu-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./beamMiner --server eu-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-  </tr>
+    <td class="tg-0lax"><a href="https://builds.beam.mw/BeamHashIII/2020.05.04/Release/win/opencl-miner-1.0.81.zip" target="_blank" rel="noopener noreferrer">OpenCL (not validated)</a></td>
+    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">beamMiner.exe --server gibs.cash:1690 --key WALLET.WORKER</span></td>
+    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./beamMiner --server gibs.cash:1690 --key WALLET.WORKER</span></td>
+  </tr> --->
 </tbody>
 </table>
 
@@ -307,109 +304,9 @@ Below you will find quick and easy command lines which you can copy and paste in
 </p>
 
 <center>
-                <h1>Command Line for US 🇺🇸  miners</h1>
-
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-0lax{text-align:left;vertical-align:top}
-</style>
-<table class="tg">
-<thead>
-  <tr>
-    <th class="tg-0lax">MINER</th>
-    <th class="tg-0lax">COMMAND LINE (WINDOWS)</th>
-    <th class="tg-0lax">COMMAND LINE (LINUX)</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-0lax"><a href="https://miniz.ch/download/" target="_blank" rel="noopener noreferrer">MiniZ</a></td>
-    <td class="tg-0lax">miniZ.exe --url=ssl://WALLET.WORKER@us-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
-    <td class="tg-0lax">./miniZ --url ssl://WALLET.WORKER@us-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://github.com/Lolliedieb/lolMiner-releases/releases" target="_blank" rel="noopener noreferrer">LolMiner</a></td>
-    <td class="tg-0lax">lolMiner.exe --coin BEAM --tls on --pool us-pool.raskul.com:1690 --user WALLET.WORKER</td>
-    <td class="tg-0lax">./lolMiner --coin BEAM --tls on --pool us-pool.raskul.com:1690 --user WALLET.WORKER</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://github.com/develsoftware/GMinerRelease/releases" target="_blank" rel="noopener noreferrer">Gminer</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">miner.exe --algo beamhash --server us-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./miner --algo beamhash --server us-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://www.bminer.me/releases/" target="_blank" rel="noopener noreferrer">Bminer</a></td>
-    <td class="tg-0lax">bminer.exe -uri ssl://WALLET.WORKER@us-pool.raskul.com:1690</td>
-    <td class="tg-0lax">./bminer -uri ssl://WALLET.WORKER@us-pool.raskul.com:1690</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://builds.beam.mw/BeamHashIII/2020.05.04/Release/win/opencl-miner-1.0.81.zip" target="_blank" rel="noopener noreferrer">OpenCL</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">beamMiner.exe --server us-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./beamMiner --server us-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-  </tr>
-</tbody>
-</table>
-
-</center>        
-
 
 </p>
-
-<center>
-                <h1>Command Line for ASIA 🇨🇳  miners</h1>
-
-<style type="text/css">
-.tg  {border-collapse:collapse;border-spacing:0;}
-.tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
-  font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
-.tg .tg-0lax{text-align:left;vertical-align:top}
-</style>
-<table class="tg">
-<thead>
-  <tr>
-    <th class="tg-0lax">MINER</th>
-    <th class="tg-0lax">COMMAND LINE (WINDOWS)</th>
-    <th class="tg-0lax">COMMAND LINE (LINUX)</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-0lax"><a href="https://miniz.ch/download/" target="_blank" rel="noopener noreferrer">MiniZ</a></td>
-    <td class="tg-0lax">miniZ.exe --url=ssl://WALLET.WORKER@asia-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
-    <td class="tg-0lax">./miniZ --url ssl://WALLET.WORKER@asia-pool.raskul.com:1690 --telemetry 127.0.0.1:1234 --ocX</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://github.com/Lolliedieb/lolMiner-releases/releases" target="_blank" rel="noopener noreferrer">LolMiner</a></td>
-    <td class="tg-0lax">lolMiner.exe --coin BEAM --tls on --pool asia-pool.raskul.com:1690 --user WALLET.WORKER</td>
-    <td class="tg-0lax">./lolMiner --coin BEAM --tls on --pool asia-pool.raskul.com:1690 --user WALLET.WORKER</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://github.com/develsoftware/GMinerRelease/releases" target="_blank" rel="noopener noreferrer">Gminer</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">miner.exe --algo beamhash --server asia-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./miner --algo beamhash --server asia-pool.raskul.com:1690 --ssl 1 --user WALLET.WORKER</span></td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://www.bminer.me/releases/" target="_blank" rel="noopener noreferrer">Bminer</a></td>
-    <td class="tg-0lax">bminer.exe -uri ssl://WALLET.WORKER@asia-pool.raskul.com:1690</td>
-    <td class="tg-0lax">./bminer -uri ssl://WALLET.WORKER@asia-pool.raskul.com:1690</td>
-  </tr>
-  <tr>
-    <td class="tg-0lax"><a href="https://builds.beam.mw/BeamHashIII/2020.05.04/Release/win/opencl-miner-1.0.81.zip" target="_blank" rel="noopener noreferrer">OpenCL</a></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">beamMiner.exe --server asia-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-    <td class="tg-0lax"><span style="font-weight:400;font-style:normal">./beamMiner --server asia-pool.raskul.com:1690 --key WALLET.WORKER</span></td>
-  </tr>
-</tbody>
-</table>
-
-</center>        
-
-                           </div>
+</div>
 
 
 
@@ -438,11 +335,11 @@ Below you will find quick and easy command lines which you can copy and paste in
     function showCoinConfig(info){
 
         var htmlKeys = '<div class="coinInfoData">Algorithm:</div>';
-        var htmlValues = '<div class="coinInfoData">' + info.algo + '</div>';
+        var htmlValues = '<div class="coinInfoData">' + info.algo + 'I </div>';
 
         for (var port in info.ports){
             htmlKeys += '<div class="coinInfoData">URL <span class="coinInfoSubtle">(difficulty ' + info.ports[port].diff + ')</span>:</div>';
-            htmlValues += '<div class="coinInfoData">' + '(eu,us or asia)-pool.raskul.com' + ':' + port + '</div>';
+            htmlValues += '<div class="coinInfoData">' + 'gibs.cash' + ':' + port + '</div>';
         }
 
         if (info.coin)

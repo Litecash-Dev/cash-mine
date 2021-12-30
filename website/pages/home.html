@@ -1,10 +1,12 @@
 <style>
     #boxWelcome{
-background-image: url("/static/bckgbox.png");
-  background-size: fit;
+        /*background-image: url("/static/bckgbox.png"); - removed thenerd  */
+        background-color: #0b3f67; /* #041D3C;  added thenerd */
+        background-size: fit;
         color: white;
         margin: 0px;
-  }
+	border: 2px solid black; /* added thenerd */
+    }
     #bannerImg{
         height: 50px;
         margin: 0px 0px 0px 60px;
@@ -54,27 +56,31 @@ background-image: url("/static/bckgbox.png");
     }
     .boxLowerHeader{
         font-size: 1.3em;
-        margin: 0 0 5px 10px;
+        margin: 5px 5px 5px 5px; /* changed from 0 0 5 10 thenerd */
     }
 
 
     #boxStatsLeft{
-        background-color: #041d3c;
-
+        background-color: #041d3c; /*#0b3f67;*/ 
+	border-left: 2px solid black; /* added thenerd */
+	border-bottom: 2px solid black; /* added thenerd */
+	border-right: 2px solid black; /* added thenerd */
+	
     }
     #boxStatsRight{
-      background-color: #041d3c;
+        position:relative;
+        background-color: #041d3c;
+	border-right: 2px solid black; /* added thenerd */
+	border-bottom: 2px solid black; /*added thenerd */
     }
     .boxStats{
         color: white;
     }
     .boxStatsList{
-        display: flex;
-        flex-flow: row wrap;
-        justify-content: space-around;
+        width:49%;
+        float:left;
         opacity: 0.77;
         margin-bottom: 5px;
-        flex: 1 1 auto;
         align-content: center;
     }
     .boxStatsList i.fa{
@@ -88,7 +94,20 @@ background-image: url("/static/bckgbox.png");
     .boxStatsList > div > div{
         padding: 3px;
     }
-
+    #exchanges {
+     position:absolute;
+     right:0px;
+     max-width:49%;
+    }
+    #exchanges > ul {
+        list-style-type:none;
+    }
+    #exchanges > ul > li >a {
+        color:white;
+    }
+    #exchanges > ul > li >a >img{
+        max-width:120px;
+    }
 
 </style>
 
@@ -101,13 +120,15 @@ background-image: url("/static/bckgbox.png");
 
 
     <div class="pure-u-2-3">
-        <div id="welcomeText">BEAM POOL</br>
+        <div id="welcomeText">LiteCash Mining Pool</br>
 	</div>
-        <ul id="welcomeItems">
-            <li> EUROPE : eu-pool.raskul.com:1690</li>
-            <li> USA : us-pool.raskul.com:1690</li>
-            <li> ASIA  : asia-pool.raskul.com:1690</li>
-	    <li> For HIGH DIFF (nicehash) simply change port to :1974</li>
+        <div>
+         <ul id="welcomeItems">
+            <li>Domain - gibs.cash:1690</li>
+	    <li>IP - 143.198.45.233:1690</li>
+	 <!---   <li>For HIGH DIFF simply change port to :1974</li> --->
+         </ul>
+        </div>
     </div>
 </div>
 
@@ -117,7 +138,7 @@ background-image: url("/static/bckgbox.png");
         <div class="boxStats" id="boxStatsLeft">
             <div class="boxLowerHeader">
 <script src="https://widgets.coingecko.com/coingecko-coin-ticker-widget.js"></script>
-<coingecko-coin-ticker-widget  coin-id="beam" currency="btc" locale="en" background-color="#041d3c"></coingecko-coin-ticker-widget>
+<coingecko-coin-ticker-widget  coin-id="litecash" currency="usd" locale="en" background-color="#041d3c"></coingecko-coin-ticker-widget>
 </div>
             <div class="boxStatsList">
                 {{ for(var algo in it.stats.algos) { }}
@@ -133,12 +154,21 @@ background-image: url("/static/bckgbox.png");
             <div class="boxStatsList">
                 {{ for(var pool in it.stats.pools) { }}
                 <div>
-                <div><i class="fa fa-money"></i> Pool Fee: 0%</div>
+                <div><i class="fa fa-money"></i> Pool Type: Prop</div>
+                <div><i class="fa fa-money"></i> Pool Fee: 1%</div>
                 <div><i class="fa fa-users"></i><span id="statsMiners{{=algo}}">{{=it.stats.algos[algo].workers}}</span> Miners</div>
                 <div><i class="fa fa-tachometer"></i><span id="statsHashrate{{=pool}}">{{=it.stats.pools[pool].hashrateString}}</span></div>
                 </div>
                 {{ } }}
             </div>
+            <div id="exchanges">
+         <ul>
+          <li><a href="https://tradeogre.com/exchange/BTC-CASH" target="_blank"><img src="static/exlogos/tradeogre.png"/> BTC/CASH</a></li>
+          <li><a href="https://tradeogre.com/exchange/LTC-CASH" target="_blank"><img src="static/exlogos/tradeogre.png"/> LTC/CASH</a></li>
+          <li><a href="https://polarity.exchange/trade?assetId2=37n4vgAUKaox1mNeE7vb45V1AWbUMsyrtq7fMVGkL8f1&assetId1=7RB3BWayeCVPq3kkpkeJZAFv2DYCB5gEwnutEpRofaw4" target="_blank"><img src="static/exlogos/polarity.png"/> USDT/CASH</a></li>
+          <li><a href="https://x.vite.net/trade?symbol=CASH-000_BTC-000&category=BTC" target="_blank"><img src="static/exlogos/vitex.png"/> BTC/CASH</a></li>
+         </ul>
+        </div>
         </div>
     </div>
 </div>

@@ -1,0 +1,593 @@
+import time
+import datetime
+import json
+import traceback
+from pprint import pprint
+import requests
+from mysql import connector
+
+with open("/home/cleo/cash-mine/cash-pay/services.json") as file:
+    config = json.load(file)
+    sql_settings = config['sql_settings']
+    httpprovider = config['httpprovider']
+
+cnx = connector.connect(**sql_settings)
+
+cursor = cnx.cursor(dictionary=True, buffered=True)
+DEFAULT_BLOCK_REWARD = 137.5
+DEFAULT_FEE = 10
+LELANTUS_FEE = 10
+GROTH_IN_BEAM = 100000000
+WITHDRAWAL_FEE_PERC = 1
+
+def get_mined():
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "get_utxo",
+            })).json()
+
+    return response
+
+
+def get_mined_block(val):
+    for x in get_mined()['result']:
+        if x['maturity'] == val+3 and x['type'] == "mine":
+          return x['status_string']
+
+
+def get_unpaid_blocks():
+    query = "SELECT * from blocks WHERE paid is NULL AND category = 'generate'"
+    cursor.execute(query)
+    records = cursor.fetchall()
+    return records
+
+def get_users_shares(time):
+    try:
+        users_shares = {}
+        query = f"SELECT * FROM shares WHERE time >= {time} AND userid is not NULL"
+        cursor.execute(query)
+        records = cursor.fetchall()
+
+        for _r in records:
+            if str(_r['userid']) not in users_shares:
+                users_shares[str(_r['userid'])] = 0
+            users_shares[str(_r['userid'])] += _r['sharediff']
+
+        return users_shares
+    except Exception as exc:
+        print(exc)
+
+
+def get_users_portion(shares):
+    total_shares = sum([float(shares[_x]) for _x in list(shares.keys())])
+    portions = {}
+    for _x in list(shares.keys()):
+        user_portion = "{0:.2f}".format(float(shares[_x] / total_shares))
+        reward_in_beams = "{0:.8f}".format(float(DEFAULT_BLOCK_REWARD * float(user_portion)))
+        portions[_x] = {"portion": user_portion, "beams": reward_in_beams, "shares": shares[_x]}
+
+    return portions, total_shares
+
+
+def validate_address(address):
+    """
+        Validate a wallet address
+    """
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "validate_address",
+                "params":
+                    {
+                        "address": address
+                    }
+            })).json()
+    return response
+
+def create_user_wallet():
+    """
+        Create new wallet address
+    """
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "create_address",
+                "params":
+                    {
+                        "expiration": "24h"
+                    }
+            })).json()
+
+    print(response)
+    return response
+
+def get_txs_list(count=100, skip=0, filter={}):
+    """
+        Fetch list of txs
+    """
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 8,
+                "method": "tx_list",
+                "params":
+                    {
+                        "filter": filter,
+                        "skip": skip,
+                        "count": count
+                    }
+            })).json()
+
+    return response
+
+def cancel_tx(tx_id):
+    """
+        Cancel Transaction
+    """
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc":"2.0",
+                "id": 4,
+                "method": "tx_cancel",
+                "params":
+                {
+                    "txId": tx_id
+                }
+            }
+        )).json()
+
+    print(response)
+    return response
+
+
+def send_transaction(
+        value,
+        fee,
+        from_address,
+        to_address,
+        comment=""
+):
+    """
+        Send transaction
+    """
+    try:
+        response = requests.post(
+            httpprovider,
+            json.dumps({
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tx_send",
+                "params":
+                    {
+                        "value": value,
+                        "fee": fee,
+                        "from": from_address,
+                        "address": to_address,
+                        "comment": comment,
+                    }
+            })).json()
+        print(response)
+        return response
+    except Exception as exc:
+        print(exc)
+
+def get_coins(fee, value):
+    try:
+        free_utxos = [{"amount": _x['amount'], "id": _x['id']} for _x in get_utxo(count=10000)['result'] if _x['status'] == 1]
+        full_value_utxo = None
+        coins = []
+        coins_sum = 0
+        fee_utxos = []
+        fee_sum = 0
+        for _utxo in free_utxos:
+            try:
+                if _utxo['amount'] == value:
+                    full_value_utxo = _utxo['id']
+                    free_utxos.remove(_utxo)
+                    break
+            except Exception as exc:
+                print(exc)
+
+        if full_value_utxo is None:
+            for _utxo in free_utxos:
+                try:
+                    if coins_sum < value:
+                        coins_sum += _utxo['amount']
+                        coins.append(_utxo['id'])
+                        free_utxos.remove(_utxo)
+                    else:
+                        break
+                except Exception as exc:
+                    print(exc)
+
+
+
+        for _utxo in free_utxos:
+            try:
+                if fee_sum < fee:
+                    fee_sum += _utxo['amount']
+                    fee_utxos.append(_utxo['id'])
+                else:
+                    break
+            except Exception as exc:
+                print(exc)
+
+
+        if full_value_utxo is not None:
+            coins = [full_value_utxo, *fee_utxos]
+        else:
+            coins = [*coins, *fee_utxos]
+
+        return coins
+    except Exception as exc:
+        print(exc)
+        traceback.print_exc()
+
+def get_utxo(count=1000, skip=0):
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "get_utxo",
+                "params":
+                    {
+                        "count": count,
+                        "skip": skip
+                    }
+            })).json()
+    return response
+
+
+def wallet_status():
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 6,
+                "method": "wallet_status",
+            })).json()
+
+    return response
+
+
+def split_coins(coins, fee):
+    response = requests.post(
+        httpprovider,
+        data=json.dumps(
+            {
+                "jsonrpc": "2.0",
+                "id": 5,
+                "method": "tx_split",
+                "params":
+                    {
+
+                        "coins": coins,
+                        "fee": fee
+                    }
+            })).json()
+
+    return response
+
+
+def check_free_utxos():
+    try:
+        free_utxos = [{"amount": _x['amount'], "id": _x['id']} for _x in get_utxo(count=10000)['result'] if _x['status'] == 1]
+        print("FREE UTXO: %s" % len(free_utxos))
+        free_utxos_count = 15
+        if len(free_utxos) < 5:
+            w_status = wallet_status()
+            available = w_status['result']['available']
+            if int(available / GROTH_IN_BEAM) > 1:
+                coins_amount = available / (free_utxos_count + 1)
+                coins = [int(coins_amount) for _ in range(free_utxos_count)]
+
+                SPLIT_FEE = 10
+                result = split_coins(coins=coins, fee=10)
+                print("Coins SPLIT", result)
+
+    except Exception as exc:
+        print(exc)
+        traceback.print_exc()
+
+
+def update_balance():
+    """
+        Update user's balance using transactions history
+    """
+    print("Handle TXs")
+    response = get_txs_list()
+
+    for _tx in response['result']:
+        try:
+
+            if _tx['status'] == 1:
+                check_hung_txs(tx=_tx)
+
+            """
+                Check withdraw txs
+            """
+            cursor.execute(
+                "SELECT * FROM txs WHERE txId = %s and receiver = %s",
+                (_tx['txId'], _tx['receiver'],)
+            )
+            _is_tx_exist_withdraw = cursor.rowcount != 0
+
+            cursor.execute(
+                "SELECT * FROM payments WHERE to_address = %s AND txId = %s",
+                (_tx['receiver'], _tx['txId'],)
+            )
+            _receiver = cursor.fetchone()
+
+            if _receiver is not None and not _is_tx_exist_withdraw and \
+                    (_tx['status'] == 4 or _tx['status'] == 3 or _tx['status'] == 2):
+
+                value_in_beams = float((int(_tx['value']) + _tx['fee']) / GROTH_IN_BEAM)
+
+                if _tx['status'] == 4:
+                    cursor.execute(
+                        f"INSERT INTO txs (txId,timestamp,sender,receiver,kernel,status,fee,value,comment) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                        (_tx['txId'], _tx['create_time'], _tx['sender'], _tx['receiver'], "0000000000000000000000000000",
+                         _tx['status'], _tx['fee'], _tx['value'], _tx['failure_reason'],)
+                    )
+                    cnx.commit()
+
+                    cursor.execute(
+                        "UPDATE payments SET status = %s, txId = %s WHERE to_address = %s AND txId = %s",
+                        ("PENDING", None, _tx['receiver'],  _tx['txId'])
+                    )
+                    cnx.commit()
+                    print(f"Tx {_tx['txId']}  {_tx['status_string']} to {_tx['receiver']}")
+
+                elif _tx['status'] == 2:
+                    print(_tx)
+                    cursor.execute(
+                        f"INSERT INTO txs (txId,timestamp,sender,receiver,kernel,status,fee,value,comment) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                        (_tx['txId'], _tx['create_time'], _tx['sender'], _tx['receiver'], "0000000000000000000000000000", _tx['status'], _tx['fee'],
+                         _tx['value'], _tx['comment'])
+                    )
+                    cnx.commit()
+
+                    cursor.execute(
+                        "UPDATE payments SET status = %s WHERE to_address = %s AND txId = %s",
+                        ("CANCELLED", _tx['receiver'], _tx['txId'])
+                    )
+                    cnx.commit()
+                    print(f"Tx {_tx['txId']}  {_tx['status_string']} to {_tx['receiver']}")
+
+                else:
+                    cursor.execute(
+                        f"INSERT INTO txs (txId,timestamp,sender,receiver,kernel,status,fee,value,comment) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)",
+                        (_tx['txId'], _tx['create_time'], _tx['sender'], _tx['receiver'], _tx['kernel'], _tx['status'], _tx['fee'],
+                         _tx['value'], _tx['comment'])
+                    )
+                    cnx.commit()
+
+                    cursor.execute(
+                        "UPDATE payments SET status = %s WHERE to_address = %s AND txId = %s",
+                        ("SENT_VERIFIED", _tx['receiver'], _tx['txId'])
+                    )
+                    cnx.commit()
+
+                    print("Withdrawal Success\n"
+                          "Balance of address %s has recharged on *%s* Beams." % (
+                              _tx['sender'], value_in_beams
+                          ))
+                    print(f"Tx {_tx['txId']}  {_tx['status_string']} to {_tx['receiver']} | SENT Verified")
+        except Exception as exc:
+            print(exc)
+            traceback.format_exc()
+
+def check_hung_txs(tx):
+    try:
+        cancel_ts = int((datetime.datetime.now() - datetime.timedelta(minutes=717)).timestamp())
+        if int(tx['create_time']) < cancel_ts:
+            result = cancel_tx(tx_id=tx['txId'])
+            print("Transaction %s cancelled\n%s" % (tx['txId'], result))
+    except Exception as exc:
+        print("Ay yi yi")
+        print(exc)
+        traceback.print_exc()
+
+def create_table(q):
+    try:
+        cursor.execute(
+            q
+        )
+    except connector.Error as err:
+        print("Failed creating table: {}".format(err))
+
+def create_index(q):
+    try:
+        cursor.execute(
+            q
+        )
+    except connector.Error as err:
+        print("Failed creating index: {}".format(err))
+
+def update_tables_on_payment():
+
+    unpaid_blocks = get_unpaid_blocks()
+    for _x in unpaid_blocks:
+        shares = get_users_shares(_x['time'])  # 2 - time
+        portions, total_shares = get_users_portion(shares)
+        pprint(portions)
+        print("\nTotal Shares: ", total_shares)
+        print(f"BLOCK #{_x['height']}")
+
+        for account_id in portions.keys():
+            cursor.execute(
+                "SELECT * FROM accounts WHERE id = %s",
+                (account_id,)
+            )
+            _account = cursor.fetchone()
+            reward_in_beams = float(portions[account_id]['beams'])
+            reward_in_groth = int(reward_in_beams * GROTH_IN_BEAM)
+            withdrawal_fee_groth = int(reward_in_groth * (WITHDRAWAL_FEE_PERC / 100))
+            tx_fee = DEFAULT_FEE if len(_account['username']) < 1000 else LELANTUS_FEE
+            print(tx_fee)
+            reward_in_groth = reward_in_groth - withdrawal_fee_groth - tx_fee
+            timestamp = int(datetime.datetime.now().timestamp())
+            block_height = int(_x['height'])
+
+
+            if reward_in_groth < 0:
+                continue
+
+            cursor.execute(
+                f"INSERT INTO payments (to_address, timestamp, txId, status, fee, withdrawal_fee, value, block_height) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                (_account['username'], timestamp, None, "PENDING", tx_fee, withdrawal_fee_groth, reward_in_groth, block_height)
+            )
+            cnx.commit()
+        print("UPDATE blocks SET paid = %s, paid_at = %s WHERE height = %s" %
+            (True, timestamp, block_height))
+        cursor.execute(
+            "UPDATE blocks SET paid = %s, paid_at = %s WHERE height = %s",
+            (True, timestamp, block_height)
+        )
+        cnx.commit()
+
+
+def payment_processing():
+    paid= []
+    try:
+        query = f"update payments set status='CANCELLED' WHERE status='SENT' and timestamp <= UNIX_TIMESTAMP(DATE_SUB(now(), INTERVAL 12 HOUR))"
+        cursor.execute(query)
+        query = f"SELECT * FROM payments WHERE status = 'PENDING' AND txId is NULL ORDER BY id DESC LIMIT 25"
+        cursor.execute(query)
+        records = cursor.fetchall()
+        for _x in records:
+            bheight = int(_x['block_height'])
+            if not get_mined_block(bheight):
+                print("Bad block")
+                print(bheight)
+                cursor.execute(
+                    "UPDATE payments SET status = 'BADBLOCK' WHERE block_height = %s",
+                    (bheight,)
+                )
+                cursor.execute(
+                    "UPDATE blocks SET category = 'orphan' WHERE height = %s",
+                    (bheight,)
+                )
+                records.remove(_x)
+            cnx.commit()
+
+        query = f"SELECT * FROM payments WHERE status = 'PENDING' AND txId is NULL ORDER BY id DESC LIMIT 25"
+        cursor.execute(query)
+        records = cursor.fetchall()
+        for _x in records:
+            paddress = _x['to_address']
+            if validate_address(paddress) == "False":
+                print("Bad Address")
+                print(bheight)
+                cursor.execute(
+                    "UPDATE payments SET status = 'BADADDRESS' WHERE to_address = %s",
+                    (paddress,)
+                )
+                records.remove(_x)
+            cnx.commit()
+
+        query = f"SELECT * FROM payments WHERE status = 'PENDING' AND txId is NULL ORDER BY id DESC LIMIT 25"
+        cursor.execute(query)
+        records = cursor.fetchall()
+        for _x in records:
+            try:
+               addy = paid.index(_x['to_address'])
+            except:
+               addy = -1
+            if _x['to_address'] == "31ca20dad4b4a0ea31c7f161dd03ed7a41d325ff56958aeb391ec1b5d84e49af3bc":
+                cursor.execute(
+                    "UPDATE payments SET status = 'SENT_VERIFIED' WHERE block_height = %s AND to_address = %s",
+                    (_x['block_height'], _x['to_address'])
+                )
+            elif wallet_status()['result']['available'] >= _x['value']+_x['fee'] and addy < 0:
+                result = send_transaction(
+                    value=_x['value'],
+                    fee=_x['fee'],
+                    from_address=FROM_ADDRESS,
+                    to_address=_x['to_address']
+                )
+                paid.append(_x['to_address'])
+                cursor.execute(
+                    "UPDATE payments SET status = 'SENT', txId = %s WHERE block_height = %s AND to_address = %s",
+                    (result['result']['txId'], _x['block_height'], _x['to_address'])
+                )
+            print(f"Status of block #{_x['block_height']} and address {_x['to_address']}")
+            cnx.commit()
+    except Exception as exc:
+        print(exc)
+
+
+FROM_ADDRESS = create_user_wallet()['result']
+
+"""
+create_table(
+\"\"\"
+CREATE TABLE IF NOT EXISTS `txs` (
+ `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+ `txId` varchar(64) DEFAULT NULL,
+ `timestamp` int DEFAULT NULL,
+ `sender` varchar(255) DEFAULT NULL,
+ `receiver` varchar(255) DEFAULT NULL,
+ `kernel` varchar(255) DEFAULT NULL,
+ `status` varchar(64) DEFAULT NULL,
+ `fee` bigint DEFAULT NULL,
+ `value` bigint DEFAULT NULL,
+ `comment` varchar(255) DEFAULT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4;
+\"\"\")
+
+create_index(
+\"\"\"
+CREATE INDEX `txId` ON txs ( txId );
+\"\"\")
+
+create_table(
+\"\"\"
+CREATE TABLE IF NOT EXISTS `payments` (
+ `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+ `to_address` varchar(255) DEFAULT NULL,
+ `block_height` int DEFAULT NULL,
+ `timestamp` int DEFAULT NULL,
+ `txId` varchar(64) DEFAULT NULL,
+ `status` varchar(64) DEFAULT NULL,
+ `fee` bigint DEFAULT NULL,
+ `withdrawal_fee` bigint DEFAULT NULL,
+ `value` bigint DEFAULT NULL,
+PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8mb4;
+\"\"\")
+
+create_index(
+\"\"\"
+CREATE INDEX `payAddTx` ON payments ( to_address, txId );
+\"\"\")
+"""
+print("======Start Payout======")
+now= datetime.datetime.now() #get the current date and time
+#%c - local date and time, %x-local's date, %X- local's time
+print(now.strftime("%c"))
+check_free_utxos()
+update_balance()
+update_tables_on_payment()
+payment_processing()
+cursor.close()
+cnx.close()
+print("=======End Payout=======")

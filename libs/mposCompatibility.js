@@ -39,7 +39,7 @@ module.exports = function(logger, poolConfig) {
     var ports = Object.keys(poolConfig.ports);
     const pid = process.env.pid;
     const timestamp = Math.round(+new Date() / 1000);
-    const algo = 'beamHashIII'; // poolConfig.coin.algorithm;
+    const algo = 'beamHashI'; // poolConfig.coin.algorithm;
     // const url = "url";
     const port = ports[0];
     const symbol = poolConfig.coin.symbol;
@@ -66,8 +66,8 @@ module.exports = function(logger, poolConfig) {
       const rigname = workerName.toString().split('.')[1];
       const pid = process.env.pid;
       const timestamp = Math.round(+new Date() / 1000);
-      const coinid = 2423;//coinData[0].id;
-      //const algo = 'beamHashII'; //poolConfig.coin.algorithm;
+      const coinid = 2423; //coinData[0].id;
+      const algo = 'beamHashI'; //poolConfig.coin.algorithm;
       // const port = poolConfig.initStats.stratumPorts[0];
       const url = 'url';
       const accountData = await query('SELECT id FROM accounts WHERE username = ?', [wallet]);
@@ -120,19 +120,20 @@ module.exports = function(logger, poolConfig) {
 
   this.handleBlock = async function(shareData) {
     let blockHash = shareData['blockhash'];
-
+    console.log(`Block `.green,shareData.height);
     const timestamp = Math.round(+new Date() / 1000);
 
     try {
       const result = await query(
-        'INSERT INTO blocks (time, userid, workerid, height, sharediff, reward, blockdiff, jobid, blockhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO blocks (time, coinid, userid, workerid, height, sharediff, reward, blockdiff, jobid, blockhash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           timestamp,
+          shareData.poolCoinId,
           shareData.poolUserId,
           shareData.poolWorkerId,
           shareData.height,
           shareData.shareDiff,
-          shareData.blockReward,
+          '137.5', //shareData.blockReward,
           shareData.blockDiff,
    	  shareData.id,
           blockHash,

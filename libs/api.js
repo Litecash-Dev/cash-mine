@@ -14,6 +14,7 @@ module.exports = function (logger, portalConfig, poolConfigs) {
     switch (req.params.method) {
       case 'stats':
         res.header('Content-Type', 'application/json');
+//        const reg  = (?<=:")(.*)(?=.);
         res.end(portalStats.statsString);
         return;
       case 'pool_stats':

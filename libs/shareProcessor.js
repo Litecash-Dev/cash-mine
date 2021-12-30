@@ -90,6 +90,7 @@ module.exports = function(logger, poolConfig){
         const time = Math.round(+new Date() / 1000);
 
     try {
+      if(shareData.poolWorkerId){
       const result = query(
         'INSERT INTO shares (userid, workerid, coinid, time, difficulty, sharediff) VALUES (?, ?, ?, ?, ?, ?)',
         [
@@ -101,7 +102,7 @@ module.exports = function(logger, poolConfig){
           shareData.shareDiff,
         ],
       );
-
+      }
       //if (result) {
       //   console.log("Share inserted");
      // }

@@ -5,6 +5,7 @@ var async = require('async');
 const mysql = require('mysql2/promise');
 const coin_id = 2423;
 var os = require('os');
+var connection = "";
 
 var algos = require('stratum-pool/lib/algoProperties.js');
 
@@ -60,7 +61,7 @@ module.exports = function(logger, portalConfig, poolConfigs) {
   var redisStats;
 
   //new
-  this.connection;
+
 
   this.statHistory = [];
   this.statPoolHistory = [];
@@ -96,13 +97,15 @@ module.exports = function(logger, portalConfig, poolConfigs) {
     });
   });
 
-  async function setupMysqlConnection() {
-    this.connection = await mysql.createConnection({
-      host: '127.0.0.1',
-      user: 'sqluser',
-      password: 'sqlpassword',
-      database: 'beam',
+  function setupMysqlConnection() {
+     connection = mysql.createPool({
+      host: 'localhost',
+      user: '',
+      password: '',
+      database: '',
     });
+connection.getConnection();
+    
   }
   function setupStatsRedis() {
     redisStats = redis.createClient(portalConfig.redis.port, portalConfig.redis.host);
@@ -258,6 +261,7 @@ module.exports = function(logger, portalConfig, poolConfigs) {
   };
 
   this.getPayout = function(address, cback) {
+    console.log('paying');
     async.waterfall(
       [
         function(callback) {
@@ -336,41 +340,57 @@ module.exports = function(logger, portalConfig, poolConfigs) {
 
   function getNodeHeight() {
     request('http://127.0.0.1:666/status', {json: true}, (err, res, body) => {
-//      console.log('NODE STATUS RESPONSE', body);
+      //console.log('NODE STATUS RESPONSE', body);
       node_height = body.height;
     }) 
   }
 
-  this.getBalanceByAddress = function(address, cback) {
+  this.getBalanceByAddress = async function(address, cback) {
     var a = address.split('.')[0];
-
-    var client = redisClients[0].client,
-      coins = redisClients[0].coins,
+    var client = redisClients[0].client || 0,
+      coins = redisClients[0].coins || 0,
       balances = [];
 
     var totalHeld = parseFloat(0);
     var totalPaid = parseFloat(0);
     var totalImmature = parseFloat(0);
-//    console.log('RESPONSE', a);
-    connection.execute(
-      "SELECT * FROM payments WHERE to_address='" + a + "'",
-       function(err, results) {
-           for (var i = 0; i < results.length; i++) {
-               if (results[i]['status'] == "CANCELLED" || results[i]['status'] == "PENDING") {
-               	totalHeld += results[i]['value'] / 100000000
-               } else if (results[i]['status'] == "SENT_VERIFIED") {
-               	totalPaid += results[i]['value'] / 100000000
-               }
-         
-           }
-//	   balances.push({           
-//                worker: String(a),
-//                balance: totalHeld,
-//                paid: totalPaid,
-//                immature: totalImmature
-//	   })
-       }
-     );
+    let ch = await connection.query(
+                "SELECT * FROM payments WHERE to_address='" + a + "'",
+              ).catch(function(err) 
+                {
+                  console.log(err);
+                }).then(function(result)
+                {
+                  for (var i = 0; i < result.length; i++)
+                  {
+                     for(var j = 0; j < result[i].length; j++)
+                     {
+                        if(result[i][j])
+                        {
+                          if (result[i][j].status == "CANCELLED")
+                          {
+                            totalHeld += result[i][j].value / 100000000;
+                          }
+                          else if (result[i][j].status == "PENDING" || result[i][j].status == "SENT")
+                          {
+                            totalImmature += result[i][j].value / 100000000;
+                          }
+                          else if (result[i][j].status == "SENT_VERIFIED")
+                          {
+                            totalPaid += result[i][j].value / 100000000;
+                          }
+                        }
+                     }
+                  }
+                  balances.push(
+                  {
+                    worker: String(a),
+                    balance: totalHeld,
+                    paid: totalPaid,
+                    immature: totalImmature
+                  });
+                });
+
     async.each(
       _this.stats.pools,
       function(pool, pcb) {
@@ -444,7 +464,7 @@ module.exports = function(logger, portalConfig, poolConfigs) {
         cback({
           totalHeld: coinsRound(totalHeld),
           totalPaid: coinsRound(totalPaid),
-          totalImmature: satoshisToCoins(totalImmature),
+          totalImmature: coinsRound(totalImmature),
           balances,
         });
       },
@@ -504,17 +524,25 @@ module.exports = function(logger, portalConfig, poolConfigs) {
               }
 
               //get mysql data
-              let [blocks, fields] = await connection.execute(
+              let [blocks, fields] = [,];
+              let [blockStats, fields2] = [,];
+              let bsf = await connection.query(
 		// #whatbeenbefore `SELECT height, confirmations, time, difficulty FROM blocks WHERE coinid = ? ORDER BY height DESC LIMIT 50`, [coin_id],
                `SELECT 
-                  height, confirmations, time, blockdiff, category  
-                  FROM blocks ORDER BY height DESC LIMIT 100`,
-              );
-              let [blockStats, fields2] = await connection.execute(
-                `SELECT 
-                    SUM(case when confirmations > 20 then 1 else 0 end) AS validBlocks
+                  height, confirmations, time, blockdiff, category 
+                  FROM blocks ORDER BY height DESC`,
+              ).catch(function(err) {
+      			console.log("数据库连接失败");
+		    }).then(function(result){ [blocks, fields] = result;});
+
+              let bsf2 = await connection.query(
+                `SELECT
+                    SUM(case when confirmations >= 10 then 1 else 0 end) AS validBlocks
                   FROM blocks ORDER BY height`,
-              );
+              ).catch(function(err) {
+		      console.log("数据库连接失败");
+	        }).then(function(result){[blockStats, fields2] = result;});
+
 //              console.log('block stats', blockStats);
               let formattedBlocks = [];
 	      let blocksStats = {'pending': 0, 'confirmed': 0, 'orphaned': 0}
@@ -524,7 +552,7 @@ module.exports = function(logger, portalConfig, poolConfigs) {
 		if (block.category == "orphan") {
 		   blocksStats['orphaned'] = blocksStats['orphaned'] + 1
 		} else {
-		  if (block.confirmations > 240) {
+		  if (block.confirmations >= 10) {
 		    blocksStats['confirmed'] = blocksStats['confirmed'] + 1
    		    blocks_list['confirmed'].push(block)
 		  } else {
@@ -541,7 +569,7 @@ module.exports = function(logger, portalConfig, poolConfigs) {
                 name: coinName,
                 symbol: poolConfigs[coinName].coin.symbol.toUpperCase(),
                 algorithm: poolConfigs[coinName].coin.algorithm,
-                poolFees: poolConfigs[coinName].rewardRecipients,
+                poolFees: 1.0, //poolConfigs[coinName].rewardRecipients,
                 hashrates: replies[i + 1],
                 poolStats: {
                   validShares: replies[i + 2] ? replies[i + 2].validShares || 0 : 0,
@@ -636,11 +664,12 @@ module.exports = function(logger, portalConfig, poolConfigs) {
               coinStats.shares += workerShares;
               // build worker stats
               if (worker in coinStats.workers) {
+                coinStats.workers[worker].name = parts[1].split('.')[1]
                 coinStats.workers[worker].shares += workerShares;
                 coinStats.workers[worker].diff = diff;
               } else {
                 coinStats.workers[worker] = {
-                  name: worker,
+                  name: parts[1].split('.')[1],
                   diff: diff,
                   shares: workerShares,
                   invalidshares: 0,

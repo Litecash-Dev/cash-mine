@@ -1,0 +1,10 @@
+{
+  "httpprovider": "http://127.0.0.1:11111/api/wallet",
+  "sql_settings": {
+    "user": "",
+    "password": "",
+    "host": "127.0.0.1",
+    "database": "",
+    "raise_on_warnings": true
+  }
+}

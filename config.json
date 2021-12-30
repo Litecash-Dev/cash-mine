@@ -2,7 +2,7 @@
     "logLevel": "warning",
     "logColors": true,
 
-    "cliPort": 17008,
+    "cliPort": 17000,
     "cliServer": "127.0.0.1",
 
     "clustering": {
@@ -25,8 +25,8 @@
             "purgeInterval": 300
         },
         "redis": {
-            "host": "127.0.0.1",
-            "port": 6379,
+            "host": "",
+            "port": 6380,
             "password": ""
         },
         "poolHex": "",
@@ -35,9 +35,9 @@
 
     "website": {
         "enabled": true,
-        "host": "127.0.0.1",
-        "port": 8010,
-        "stratumHost": "127.0.0.1",
+        "host": "",
+        "port": 443,
+        "stratumHost": "",
         "stats": {
             "updateInterval": 30,
             "historicalRetention": 14400,
@@ -45,18 +45,18 @@
         },
         "adminCenter": {
             "enabled": false,
-            "password": "password"
+            "password": ""
         },
         "tlsOptions" : {
-            "enabled": false,
+            "enabled": true,
             "cert": "",
             "key": ""
         }
     },
 
     "redis": {
-        "host": "127.0.0.1",
-        "port": 6379,
+        "host": "",
+        "port": 6380,
         "password": ""
     },
 
