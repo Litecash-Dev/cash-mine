@@ -1,4 +1,4 @@
-# How to deploy BASiC(Beam Pool Payment Processor)
+# How to deploy BASiC(CASH Pool Payment Processor)
 
 ## Install Python
 Please, install Python using the link below
