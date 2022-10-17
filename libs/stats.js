@@ -527,12 +527,12 @@ connection.getConnection();
               let [blocks, fields] = [,];
               let [blockStats, fields2] = [,];
               let bsf = await connection.query(
-		// #whatbeenbefore `SELECT height, confirmations, time, difficulty FROM blocks WHERE coinid = ? ORDER BY height DESC LIMIT 50`, [coin_id],
+		            // #whatbeenbefore `SELECT height, confirmations, time, difficulty FROM blocks WHERE coinid = ? ORDER BY height DESC LIMIT 50`, [coin_id],
                `SELECT 
                   height, confirmations, time, blockdiff, category 
-                  FROM blocks ORDER BY height DESC`,
+                  FROM blocks ORDER BY height DESC LIMIT 1000`, // added Limit 100 for miningpool stats as they could not handle all of the data we were returning
               ).catch(function(err) {
-      			console.log("数据库连接失败");
+      			console.log("Database connection failed");
 		    }).then(function(result){ [blocks, fields] = result;});
 
               let bsf2 = await connection.query(
@@ -540,7 +540,7 @@ connection.getConnection();
                     SUM(case when confirmations >= 10 then 1 else 0 end) AS validBlocks
                   FROM blocks ORDER BY height`,
               ).catch(function(err) {
-		      console.log("数据库连接失败");
+		      console.log("Database Connection Failed");
 	        }).then(function(result){[blockStats, fields2] = result;});
 
 //              console.log('block stats', blockStats);
