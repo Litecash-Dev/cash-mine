@@ -10,8 +10,6 @@ DISCLAIMER: This LiteCash open source pool software comes with no warranty and i
 
 The pool software is also now offered with Beam’s BASiC rewards distribution function and this part is contained in accompanying repository, with it’s own README file and same disclaimer above applies.
 
-A testing pool built from this software can be found at https://gibs.cash/ (The Official LiteCash Pool) – so, you can see what you will get by navigating to this link.
-
 
 To begin compiling the LiteCash open source pool software, you will need to find a suitable VPS (Virtual Private Server) from a respectable hosting company. 
 
